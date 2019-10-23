@@ -2,7 +2,8 @@ from random import randint, choice
 import string
 import sys
 import operator
-import time
+from timeit import default_timer as timer
+from random import sample
 
 
 class Data:
@@ -41,47 +42,75 @@ class DataSet:
 
 class ArrayStructure:
     def __init__(self, data):
-        self.array = data
+        self.data = data
 
-    def insertValue(self, element: Data):
-        self.array.append(element)
+    def insert_value(self, element: Data):
+        self.data.append(element)
 
-    def removeValue(self, value: int):
+    def remove_value(self, value: int):
         isNotValue = lambda x: x.value is not value
-        self.array = filter(isNotValue, self.array)
+        self.data = list(filter(isNotValue, self.data))
 
-    def findValue(self, value: int):
+    def find_value(self, value: int):
         isValue = lambda x: x.value is value
-        return filter(isValue, self.array)
+        return list(filter(isValue, self.data))
 
-    def findValues(self, valueStart: int, valueEnd: int):
-        return [element for element in self.array if valueStart <= element.value <= valueEnd]
+    def find_values(self, valueStart: int, valueEnd: int):
+        return [element for element in self.data if valueStart <= element.value <= valueEnd]
+
+
+class TimeMeasure:
+    def __init__(self):
+        self.insert = 0
+        self.delete = 0
+        self.search = 0
+
+
+def insert_elements(structure, elements):
+    start = timer()
+    for elem in elements:
+        structure.insert_value(elem)
+    end = timer()
+    return end - start
+
+
+def delete_elements(structure, elements):
+    start = timer()
+    for elem in elements:
+        structure.remove_value(elem.value)
+    end = timer()
+    return end - start
+
+
+def find_elements(structure, elements):
+    start = timer()
+    for elem in elements:
+        structure.find_value(elem.value)
+    end = timer()
+    return end - start
+
+
+def get_random_elements(dataset, sample_size):
+    return sample(dataset, sample_size)
 
 
 if __name__ == '__main__':
 
     user_input_size = 10
+    insert_items_size = 20
+    delete_items_size = 5
+    search_items_size = 10
     data_set = DataSet(user_input_size)
-    # data_set.print_random()
-    # data_set.generate_sorted()
-    # data_set.print_sorted()
+    insert_set = DataSet(insert_items_size).randomSet
+    delete_set = get_random_elements(data_set.randomSet, delete_items_size)
+    array_time = TimeMeasure()
+    array_structure = ArrayStructure(data_set.randomSet)
+    array_time.insert = insert_elements(array_structure, insert_set)
+    array_time.delete = delete_elements(array_structure, delete_set)
+    search_set = get_random_elements(array_structure.data, search_items_size)
+    array_time.search = find_elements(array_structure, search_set)
+    # DataSet.print_list(array_structure.find_values(110, 130))
+    print(f'Array insertion time: {array_time.insert} \n'
+          f'Array deletion time: {array_time.delete}. \n'
+          f'Array search time: {array_time.search}.')
 
-    start = time.time()
-
-    arrayStructure = ArrayStructure(data_set.randomSet)
-    arrayStructure.insertValue(Data(100, 'Marcin'))
-    arrayStructure.insertValue(Data(110, 'Piotrek'))
-    arrayStructure.insertValue(Data(120, 'Maciej'))
-    arrayStructure.insertValue(Data(130, 'Bombel'))
-    arrayStructure.insertValue(Data(140, 'Koszli'))
-    DataSet.print_list(arrayStructure.array)
-
-    DataSet.print_list(arrayStructure.findValue(100))
-
-    DataSet.print_list(arrayStructure.findValues(110, 130))
-
-    arrayStructure.removeValue(100)
-    DataSet.print_list(arrayStructure.array)
-
-    end = time.time()
-    print(end - start)
