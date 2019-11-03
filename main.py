@@ -4,6 +4,7 @@ import sys
 import operator
 from timeit import default_timer as timer
 from random import sample
+from bintrees import *
 
 
 class Data:
@@ -64,6 +65,10 @@ class TimeMeasure:
         self.insert = 0
         self.delete = 0
         self.search = 0
+        self.insert_avl = 0
+        self.delete_avl = 0
+        self.search_avl = 0
+
 
 
 def insert_elements(structure, elements):
@@ -94,6 +99,21 @@ def get_random_elements(dataset, sample_size):
     return sample(dataset, sample_size)
 
 
+def insert_elements_AVL(structure, elements):
+    start = timer()
+    for elem in elements:
+        structure.insert(elem.value, elem.text)
+    end = timer()
+    return end - start
+
+def delete_elements_AVL(structure, elements):
+    start = timer()
+    for elem in elements:
+        structure.remove(elem.value)
+    end = timer()
+    return end - start
+
+
 if __name__ == '__main__':
 
     user_input_size = 10
@@ -109,8 +129,15 @@ if __name__ == '__main__':
     array_time.delete = delete_elements(array_structure, delete_set)
     search_set = get_random_elements(array_structure.data, search_items_size)
     array_time.search = find_elements(array_structure, search_set)
+
+    root = AVLTree()
+    array_time.insert_avl = insert_elements_AVL(root, insert_set)
+    array_time.delete_avl = delete_elements_AVL(root, delete_set) #cos z kluczami chyba nie tak
+
     # DataSet.print_list(array_structure.find_values(110, 130))
     print(f'Array insertion time: {array_time.insert} \n'
           f'Array deletion time: {array_time.delete}. \n'
-          f'Array search time: {array_time.search}.')
+          f'Array search time: {array_time.search}. \n'
+          f'AVL insertion time: {array_time.insert_avl}. \n'
+          f'AVL deletion time: {array_time.delete_avl}. \n')
 
