@@ -72,6 +72,20 @@ class AVLWrapper:
         return self.root.get_value(value)
 
 
+class BinaryWrapper:
+    def __init__(self):
+        self.root = BinaryTree()
+
+    def insert_element(self, element: Data):
+        self.root.insert(element.value, element.text)
+
+    def remove_element(self, value: int):
+        self.root.remove(value)
+
+    def find_element(self, value: int):
+        return self.root.get_value(value)
+
+
 class TimeMeasure:
     def __init__(self):
         self.construct = []
@@ -129,6 +143,7 @@ if __name__ == '__main__':
 
     array_time = TimeMeasure()
     avl_time = TimeMeasure()
+    binary_time = TimeMeasure()
 
     data_set = DataSet(size)
     insert_set = DataSet(to_insert).randomSet
@@ -146,12 +161,19 @@ if __name__ == '__main__':
     avl_time.delete = delete_elements(avl, delete_set)
     avl_time.find = find_elements(avl, insert_set)
 
+    binary = BinaryWrapper()
+    binary_time.construct = construct(binary, data_set.randomSet, construct_interval)
+    binary_time.insert = insert_elements(binary, insert_set)
+    binary_time.delete = delete_elements(binary, delete_set)
+    binary_time.find = find_elements(binary, insert_set)
+
     for i in range(len(avl_time.construct)):
-        print(f'{(i+1)*construct_interval} Array:{array_time.construct[i]} AVL:{avl_time.construct[i]}')
+        print(f'{(i+1)*construct_interval} Array:{array_time.construct[i]} AVL:{avl_time.construct[i]} '
+              f'Binary:{binary_time.construct[i]}')
     print(f'/// Insertion: ///\n'
-          f'Array: {array_time.insert} AVL: {avl_time.insert} \n'
+          f'Array: {array_time.insert} AVL: {avl_time.insert} Binary: {binary_time.insert} \n'
           f'/// Deletion: ///\n'
-          f'Array: {array_time.delete} AVL: {avl_time.delete} \n'
+          f'Array: {array_time.delete} AVL: {avl_time.delete} Binary: {binary_time.delete} \n'
           f'/// Find elements: ///\n'
-          f'Array: {array_time.find} AVL: {avl_time.find} \n'
+          f'Array: {array_time.find} AVL: {avl_time.find} Binary: {binary_time.find} \n'
           )
