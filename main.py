@@ -45,36 +45,45 @@ class ArrayStructure:
     def __init__(self, data):
         self.data = data
 
-    def insert_value(self, element: Data):
+    def insert_element(self, element: Data):
         self.data.append(element)
 
-    def remove_value(self, value: int):
-        isNotValue = lambda x: x.value is not value
-        self.data = list(filter(isNotValue, self.data))
+    def remove_element(self, value: int):
+        self.data = list(filter(lambda x: x.value is not value, self.data))
 
-    def find_value(self, value: int):
-        isValue = lambda x: x.value is value
-        return list(filter(isValue, self.data))
+    def find_element(self, value: int):
+        return list(filter(lambda x: x.value is value, self.data))
 
-    def find_values(self, valueStart: int, valueEnd: int):
+    def find_elements(self, valueStart: int, valueEnd: int):
         return [element for element in self.data if valueStart <= element.value <= valueEnd]
+
+
+class AVLWrapper:
+    def __init__(self):
+        self.root = AVLTree()
+
+    def insert_element(self, element: Data):
+        self.root.insert(element.value, element.text)
+
+    def remove_element(self, value: int):
+        self.root.remove(value)
+
+    def find_element(self, value: int):
+        return self.root.get_value(value)
 
 
 class TimeMeasure:
     def __init__(self):
+        self.construct = []
         self.insert = 0
         self.delete = 0
-        self.search = 0
-        self.insert_avl = 0
-        self.delete_avl = 0
-        self.search_avl = 0
-
+        self.find = 0
 
 
 def insert_elements(structure, elements):
     start = timer()
     for elem in elements:
-        structure.insert_value(elem)
+        structure.insert_element(elem)
     end = timer()
     return end - start
 
@@ -82,7 +91,7 @@ def insert_elements(structure, elements):
 def delete_elements(structure, elements):
     start = timer()
     for elem in elements:
-        structure.remove_value(elem.value)
+        structure.remove_element(elem.value)
     end = timer()
     return end - start
 
@@ -90,7 +99,7 @@ def delete_elements(structure, elements):
 def find_elements(structure, elements):
     start = timer()
     for elem in elements:
-        structure.find_value(elem.value)
+        structure.find_element(elem.value)
     end = timer()
     return end - start
 
@@ -99,45 +108,50 @@ def get_random_elements(dataset, sample_size):
     return sample(dataset, sample_size)
 
 
-def insert_elements_AVL(structure, elements):
-    start = timer()
-    for elem in elements:
-        structure.insert(elem.value, elem.text)
-    end = timer()
-    return end - start
-
-def delete_elements_AVL(structure, elements):
-    start = timer()
-    for elem in elements:
-        structure.remove(elem.value)
-    end = timer()
-    return end - start
+def construct(structure, insertion_set, interval):
+    inserted = 0
+    timestamps = []
+    while inserted < len(insertion_set):
+        start = timer()
+        for index in range(interval):
+            structure.insert_element(insertion_set[inserted+index])
+        end = timer()
+        timestamps.append(end-start)
+        inserted += interval
+    return timestamps
 
 
 if __name__ == '__main__':
+    size = 10000  # number of elements in a structure
+    construct_interval = 100  # timestamps frequency while constructing
+    to_insert = 100  # number of elements to insert
+    to_delete = 100  # number of elements to delete
 
-    user_input_size = 10
-    insert_items_size = 20
-    delete_items_size = 5
-    search_items_size = 10
-    data_set = DataSet(user_input_size)
-    insert_set = DataSet(insert_items_size).randomSet
-    delete_set = get_random_elements(data_set.randomSet, delete_items_size)
     array_time = TimeMeasure()
-    array_structure = ArrayStructure(data_set.randomSet)
+    avl_time = TimeMeasure()
+
+    data_set = DataSet(size)
+    insert_set = DataSet(to_insert).randomSet
+    delete_set = get_random_elements(data_set.randomSet, to_delete)
+
+    array_structure = ArrayStructure([])
+    array_time.construct = construct(array_structure, data_set.randomSet, construct_interval)
     array_time.insert = insert_elements(array_structure, insert_set)
     array_time.delete = delete_elements(array_structure, delete_set)
-    search_set = get_random_elements(array_structure.data, search_items_size)
-    array_time.search = find_elements(array_structure, search_set)
+    array_time.find = find_elements(array_structure, insert_set)
 
-    root = AVLTree()
-    array_time.insert_avl = insert_elements_AVL(root, insert_set)
-    array_time.delete_avl = delete_elements_AVL(root, delete_set) #cos z kluczami chyba nie tak
+    avl = AVLWrapper()
+    avl_time.construct = construct(avl, data_set.randomSet, construct_interval)
+    avl_time.insert = insert_elements(avl, insert_set)
+    avl_time.delete = delete_elements(avl, delete_set)
+    avl_time.find = find_elements(avl, insert_set)
 
-    # DataSet.print_list(array_structure.find_values(110, 130))
-    print(f'Array insertion time: {array_time.insert} \n'
-          f'Array deletion time: {array_time.delete}. \n'
-          f'Array search time: {array_time.search}. \n'
-          f'AVL insertion time: {array_time.insert_avl}. \n'
-          f'AVL deletion time: {array_time.delete_avl}. \n')
-
+    for i in range(len(avl_time.construct)):
+        print(f'{(i+1)*construct_interval} Array:{array_time.construct[i]} AVL:{avl_time.construct[i]}')
+    print(f'/// Insertion: ///\n'
+          f'Array: {array_time.insert} AVL: {avl_time.insert} \n'
+          f'/// Deletion: ///\n'
+          f'Array: {array_time.delete} AVL: {avl_time.delete} \n'
+          f'/// Find elements: ///\n'
+          f'Array: {array_time.find} AVL: {avl_time.find} \n'
+          )
