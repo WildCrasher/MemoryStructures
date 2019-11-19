@@ -143,70 +143,79 @@ def construct(structure, insertion_set, interval):
         inserted += interval
     return timestamps
 
+def saveResult(file, time):
+    file.write(str(time.insert)+","+str(time.delete)+","+str(time.find)+","+str(time.f_interval)+"\n")
 
 if __name__ == '__main__':
-    size = 10000  # number of elements in a structure
-    construct_interval = 100  # timestamps frequency while constructing
-    to_insert = 100  # number of elements to insert
-    to_delete = 100  # number of elements to delete
-    find_min = 0  # TODO automatically generate period when given %
-    find_max = 9000000
+    file = open("results.csv", "w")
+    for size in range(1000, 11000, 1000):
+        construct_interval = 1000  # timestamps frequency while constructing
+        to_insert = 100  # number of elements to insert
+        to_delete = 100  # number of elements to delete
+        find_min = 0  # TODO automatically generate period when given %
+        find_max = 9000000
 
-    array_time = TimeMeasure()
-    avl_time = TimeMeasure()
-    binary_time = TimeMeasure()
-    rb_time = TimeMeasure()
+        array_time = TimeMeasure()
+        avl_time = TimeMeasure()
+        binary_time = TimeMeasure()
+        rb_time = TimeMeasure()
 
-    data_set = DataSet(size)
-    insert_set = DataSet(to_insert).randomSet
-    delete_set = get_random_elements(data_set.randomSet, to_delete)
+        data_set = DataSet(size)
+        insert_set = DataSet(to_insert).randomSet
+        delete_set = get_random_elements(data_set.randomSet, to_delete)
 
-    array_structure = ArrayStructure([])
-    array_time.construct = construct(array_structure, data_set.randomSet, construct_interval)
-    array_time.insert = insert_elements(array_structure, insert_set)
-    array_time.delete = delete_elements(array_structure, delete_set)
-    array_time.find = find_elements(array_structure, insert_set)
-    array_time.f_interval = find_elements_interval(array_structure, find_min, find_max)
+        array_structure = ArrayStructure([])
+        array_time.construct = construct(array_structure, data_set.randomSet, construct_interval)
+        array_time.insert = insert_elements(array_structure, insert_set)
+        array_time.delete = delete_elements(array_structure, delete_set)
+        array_time.find = find_elements(array_structure, insert_set)
+        array_time.f_interval = find_elements_interval(array_structure, find_min, find_max)
 
-    avl = AVLWrapper()
-    avl_time.construct = construct(avl, data_set.randomSet, construct_interval)
-    avl_time.insert = insert_elements(avl, insert_set)
-    avl_time.delete = delete_elements(avl, delete_set)
-    avl_time.find = find_elements(avl, insert_set)
-    avl_time.f_interval = find_elements_interval(avl, find_min, find_max)
+        avl = AVLWrapper()
+        avl_time.construct = construct(avl, data_set.randomSet, construct_interval)
+        avl_time.insert = insert_elements(avl, insert_set)
+        avl_time.delete = delete_elements(avl, delete_set)
+        avl_time.find = find_elements(avl, insert_set)
+        avl_time.f_interval = find_elements_interval(avl, find_min, find_max)
 
-    binary = BinaryWrapper()
-    binary_time.construct = construct(binary, data_set.randomSet, construct_interval)
-    binary_time.insert = insert_elements(binary, insert_set)
-    binary_time.delete = delete_elements(binary, delete_set)
-    binary_time.find = find_elements(binary, insert_set)
-    binary_time.f_interval = find_elements_interval(binary, find_min, find_max)
+        binary = BinaryWrapper()
+        binary_time.construct = construct(binary, data_set.randomSet, construct_interval)
+        binary_time.insert = insert_elements(binary, insert_set)
+        binary_time.delete = delete_elements(binary, delete_set)
+        binary_time.find = find_elements(binary, insert_set)
+        binary_time.f_interval = find_elements_interval(binary, find_min, find_max)
 
-    rbtree = RBWrapper()
-    rb_time.construct = construct(rbtree, data_set.randomSet, construct_interval)
-    rb_time.insert = insert_elements(rbtree, insert_set)
-    rb_time.delete = delete_elements(rbtree, delete_set)
-    rb_time.find = find_elements(rbtree, insert_set)
-    rb_time.f_interval = find_elements_interval(rbtree, find_min, find_max)
+        rbtree = RBWrapper()
+        rb_time.construct = construct(rbtree, data_set.randomSet, construct_interval)
+        rb_time.insert = insert_elements(rbtree, insert_set)
+        rb_time.delete = delete_elements(rbtree, delete_set)
+        rb_time.find = find_elements(rbtree, insert_set)
+        rb_time.f_interval = find_elements_interval(rbtree, find_min, find_max)
 
-    for i in range(len(avl_time.construct)):
-        print(f'{(i+1)*construct_interval} '
-              f'Array:{array_time.construct[i]} '
-              f'AVL:{avl_time.construct[i]} '
-              f'Binary:{binary_time.construct[i]}' 
-              f'RB:{rb_time.construct[i]}'
+        for i in range(len(avl_time.construct)):
+            print(f'{(i+1)*construct_interval} '
+                  f'Array:{array_time.construct[i]} '
+                  f'AVL:{avl_time.construct[i]} '
+                  f'Binary:{binary_time.construct[i]}' 
+                  f'RB:{rb_time.construct[i]}'
+                  )
+        print(f'/// Insertion: ///\n'
+              f'Array: {array_time.insert} AVL: {avl_time.insert} Binary: {binary_time.insert}  RB: {rb_time.insert}\n'
+              f'/// Deletion: ///\n'
+              f'Array: {array_time.delete} AVL: {avl_time.delete} Binary: {binary_time.delete} RB: {rb_time.delete}\n'
+              f'/// Find elements: ///\n'
+              f'Array: {array_time.find} AVL: {avl_time.find} Binary: {binary_time.find} RB: {rb_time.find}\n'
+              f'/// Find elements (interval): ///\n'
+              f'Array: {array_time.f_interval} AVL: {avl_time.f_interval} Binary: {binary_time.f_interval} RB: {rb_time.f_interval}\n'
               )
-    print(f'/// Insertion: ///\n'
-          f'Array: {array_time.insert} AVL: {avl_time.insert} Binary: {binary_time.insert}  RB: {rb_time.insert}\n'
-          f'/// Deletion: ///\n'
-          f'Array: {array_time.delete} AVL: {avl_time.delete} Binary: {binary_time.delete} RB: {rb_time.delete}\n'
-          f'/// Find elements: ///\n'
-          f'Array: {array_time.find} AVL: {avl_time.find} Binary: {binary_time.find} RB: {rb_time.find}\n'
-          f'/// Find elements (interval): ///\n'
-          f'Array: {array_time.f_interval} AVL: {avl_time.f_interval} Binary: {binary_time.f_interval} RB: {rb_time.f_interval}\n'
-          )
 
-    # print(f'Array: {len(array_structure.find_elements(find_min, find_max))} '
-    #       f'AVL: {len(list(avl.find_elements(find_min, find_max)))} '
-    #       f'Binary: {len(list(binary.find_elements(find_min, find_max)))} '
-    #       f'RB: {len(list(rbtree.find_elements(find_min, find_max)))}')
+        # print(f'Array: {len(array_structure.find_elements(find_min, find_max))} '
+        #       f'AVL: {len(list(avl.find_elements(find_min, find_max)))} '
+        #       f'Binary: {len(list(binary.find_elements(find_min, find_max)))} '
+        #       f'RB: {len(list(rbtree.find_elements(find_min, find_max)))}')
+        file.write(str(size)+"\n")
+        saveResult(file, array_time)
+        saveResult(file, avl_time)
+        saveResult(file, binary_time)
+        saveResult(file, rb_time)
+    file.close()
