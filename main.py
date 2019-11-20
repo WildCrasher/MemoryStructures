@@ -5,6 +5,8 @@ import operator
 from timeit import default_timer as timer
 from random import sample
 from bintrees import *
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Data:
@@ -143,12 +145,38 @@ def construct(structure, insertion_set, interval):
         inserted += interval
     return timestamps
 
+
 def saveResult(file, time):
     file.write(str(time.insert)+","+str(time.delete)+","+str(time.find)+","+str(time.f_interval)+"\n")
 
+def plot_result(x, y, labels, title=""):
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    for i in range(0, len(y)):
+        ax.plot(x, y[i], label=labels[i])
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.set_ylabel('time [s]')
+    ax.set_xlabel('number of elements')
+    ax.set_title(title)
+    intervals = 5
+    ax.set_xticks(np.arange(x[0], x[-1]+1, (x[-1]-x[0])/intervals))
+    plt.show()
+
+
+class Result:
+    def __init__(self):
+        self.array = []
+        self.avl = []
+        self.bst = []
+        self.rb = []
+
+
 if __name__ == '__main__':
-    file = open("results.csv", "w")
-    for size in range(1000, 11000, 1000):
+    result = Result()
+    # file = open("results.csv", "w")
+    for size in range(1000, 10001, 1000):
         construct_interval = 1000  # timestamps frequency while constructing
         to_insert = 100  # number of elements to insert
         to_delete = 100  # number of elements to delete
@@ -208,14 +236,53 @@ if __name__ == '__main__':
               f'/// Find elements (interval): ///\n'
               f'Array: {array_time.f_interval} AVL: {avl_time.f_interval} Binary: {binary_time.f_interval} RB: {rb_time.f_interval}\n'
               )
+        result.array.append([array_time.insert, array_time.delete, array_time.find, array_time.f_interval])
+        result.bst.append([binary_time.insert, binary_time.delete, binary_time.find, binary_time.f_interval])
+        result.avl.append([avl_time.insert, avl_time.delete, avl_time.find, avl_time.f_interval])
+        result.rb.append([rb_time.insert, rb_time.delete, rb_time.find, rb_time.f_interval])
+        if size == 10000:
+            plot_result(np.arange(construct_interval, size+1, construct_interval),
+                        [array_time.construct, avl_time.construct, binary_time.construct, rb_time.construct],
+                        ["array", "avl", "bst", "red black"], "Construct structure")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[0], result.array)),
+                                                       list(map(lambda x: x[0], result.avl)),
+                                                       list(map(lambda x: x[0], result.bst)),
+                                                       list(map(lambda x: x[0], result.rb))], ["array", "avl", "bst", "red black"], "Insert elements")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[1], result.array)),
+                                                       list(map(lambda x: x[1], result.avl)),
+                                                       list(map(lambda x: x[1], result.bst)),
+                                                       list(map(lambda x: x[1], result.rb))],
+                        ["array", "avl", "bst", "red black"], "Delete elements")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[2], result.array)),
+                                                       list(map(lambda x: x[2], result.avl)),
+                                                       list(map(lambda x: x[2], result.bst)),
+                                                       list(map(lambda x: x[2], result.rb))],
+                        ["array", "avl", "bst", "red black"], "Find elements")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[3], result.array)),
+                                                       list(map(lambda x: x[3], result.avl)),
+                                                       list(map(lambda x: x[3], result.bst)),
+                                                       list(map(lambda x: x[3], result.rb))],
+                        ["array", "avl", "bst", "red black"], "Find elements in interval")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[1], result.avl)),
+                                                       list(map(lambda x: x[1], result.bst)),
+                                                       list(map(lambda x: x[1], result.rb))],
+                        ["avl", "bst", "red black"], "Delete elements")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[2], result.avl)),
+                                                       list(map(lambda x: x[2], result.bst)),
+                                                       list(map(lambda x: x[2], result.rb))],
+                        ["avl", "bst", "red black"], "Find elements")
+            plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[3], result.avl)),
+                                                       list(map(lambda x: x[3], result.bst)),
+                                                       list(map(lambda x: x[3], result.rb))],
+                        ["avl", "bst", "red black"], "Find elements in interval")
 
         # print(f'Array: {len(array_structure.find_elements(find_min, find_max))} '
         #       f'AVL: {len(list(avl.find_elements(find_min, find_max)))} '
         #       f'Binary: {len(list(binary.find_elements(find_min, find_max)))} '
         #       f'RB: {len(list(rbtree.find_elements(find_min, find_max)))}')
-        file.write(str(size)+"\n")
-        saveResult(file, array_time)
-        saveResult(file, avl_time)
-        saveResult(file, binary_time)
-        saveResult(file, rb_time)
-    file.close()
+    #     file.write(str(size)+"\n")
+    #     saveResult(file, array_time)
+    #     saveResult(file, avl_time)
+    #     saveResult(file, binary_time)
+    #     saveResult(file, rb_time)
+    # file.close()
