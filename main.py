@@ -9,6 +9,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+class TimeMeasure:
+    def __init__(self):
+        self.construct = []
+        self.insert = 0
+        self.delete = 0
+        self.find = 0
+        self.f_interval = 0
+
+array_time = TimeMeasure()
+avl_time = TimeMeasure()
+binary_time = TimeMeasure()
+rb_time = TimeMeasure()
+construct_interval = 1000  # timestamps frequency while constructing
+to_insert = 100  # number of elements to insert
+to_delete = 100  # number of elements to delete
+find_min = 0  # TODO automatically generate period when given %
+find_max = 9000000
+iterations = 25
+
+
 class Data:
     def __init__(self, value, text):
         self.value = value
@@ -88,16 +108,6 @@ class RBWrapper(BinaryWrapper):
         BinaryWrapper.__init__(self)
         self.root = RBTree()
 
-
-class TimeMeasure:
-    def __init__(self):
-        self.construct = []
-        self.insert = 0
-        self.delete = 0
-        self.find = 0
-        self.f_interval = 0
-
-
 def insert_elements(structure, elements):
     start = timer()
     for elem in elements:
@@ -172,22 +182,9 @@ class Result:
         self.bst = []
         self.rb = []
 
-
-if __name__ == '__main__':
+def calculateDataForPlot():
     result = Result()
-    # file = open("results.csv", "w")
     for size in range(1000, 10001, 1000):
-        construct_interval = 1000  # timestamps frequency while constructing
-        to_insert = 100  # number of elements to insert
-        to_delete = 100  # number of elements to delete
-        find_min = 0  # TODO automatically generate period when given %
-        find_max = 9000000
-
-        array_time = TimeMeasure()
-        avl_time = TimeMeasure()
-        binary_time = TimeMeasure()
-        rb_time = TimeMeasure()
-
         data_set = DataSet(size)
         insert_set = DataSet(to_insert).randomSet
         delete_set = get_random_elements(data_set.randomSet, to_delete)
@@ -220,34 +217,60 @@ if __name__ == '__main__':
         rb_time.find = find_elements(rbtree, insert_set)
         rb_time.f_interval = find_elements_interval(rbtree, find_min, find_max)
 
-        for i in range(len(avl_time.construct)):
-            print(f'{(i+1)*construct_interval} '
-                  f'Array:{array_time.construct[i]} '
-                  f'AVL:{avl_time.construct[i]} '
-                  f'Binary:{binary_time.construct[i]}' 
-                  f'RB:{rb_time.construct[i]}'
-                  )
-        print(f'/// Insertion: ///\n'
-              f'Array: {array_time.insert} AVL: {avl_time.insert} Binary: {binary_time.insert}  RB: {rb_time.insert}\n'
-              f'/// Deletion: ///\n'
-              f'Array: {array_time.delete} AVL: {avl_time.delete} Binary: {binary_time.delete} RB: {rb_time.delete}\n'
-              f'/// Find elements: ///\n'
-              f'Array: {array_time.find} AVL: {avl_time.find} Binary: {binary_time.find} RB: {rb_time.find}\n'
-              f'/// Find elements (interval): ///\n'
-              f'Array: {array_time.f_interval} AVL: {avl_time.f_interval} Binary: {binary_time.f_interval} RB: {rb_time.f_interval}\n'
-              )
+        # for i in range(len(avl_time.construct)):
+        #     print(f'{(i+1)*construct_interval} '
+        #           f'Array:{array_time.construct[i]} '
+        #           f'AVL:{avl_time.construct[i]} '
+        #           f'Binary:{binary_time.construct[i]}'
+        #           f'RB:{rb_time.construct[i]}'
+        #           )
+        # print(f'/// Insertion: ///\n'
+        #       f'Array: {array_time.insert} AVL: {avl_time.insert} Binary: {binary_time.insert}  RB: {rb_time.insert}\n'
+        #       f'/// Deletion: ///\n'
+        #       f'Array: {array_time.delete} AVL: {avl_time.delete} Binary: {binary_time.delete} RB: {rb_time.delete}\n'
+        #       f'/// Find elements: ///\n'
+        #       f'Array: {array_time.find} AVL: {avl_time.find} Binary: {binary_time.find} RB: {rb_time.find}\n'
+        #       f'/// Find elements (interval): ///\n'
+        #       f'Array: {array_time.f_interval} AVL: {avl_time.f_interval} Binary: {binary_time.f_interval} RB: {rb_time.f_interval}\n'
+        #       )
         result.array.append([array_time.insert, array_time.delete, array_time.find, array_time.f_interval])
         result.bst.append([binary_time.insert, binary_time.delete, binary_time.find, binary_time.f_interval])
         result.avl.append([avl_time.insert, avl_time.delete, avl_time.find, avl_time.f_interval])
         result.rb.append([rb_time.insert, rb_time.delete, rb_time.find, rb_time.f_interval])
-        if size == 10000:
-            plot_result(np.arange(construct_interval, size+1, construct_interval),
+
+    return result
+
+def makeAverage(data):
+    result = Result()
+    array_results = list(map(lambda iteration_result: iteration_result.array, data))
+    bst_results = list(map(lambda iteration_result: iteration_result.bst, data))
+    avl_results = list(map(lambda iteration_result: iteration_result.avl, data))
+    rb_results = list(map(lambda iteration_result: iteration_result.rb, data))
+
+    result.array = np.array(array_results).mean(axis = 0)
+    result.bst = np.array(bst_results).mean(axis = 0)
+    result.avl = np.array(avl_results).mean(axis = 0)
+    result.rb = np.array(rb_results).mean(axis = 0)
+
+    return result
+
+if __name__ == '__main__':
+    # file = open("results.csv", "w")
+    toMakeAverage = []
+    for iteration in range(1, iterations + 1, 1):
+        resultDone = calculateDataForPlot()
+        toMakeAverage.append(resultDone)
+
+        if iteration == iterations:
+            result = makeAverage(toMakeAverage)
+            plot_result(np.arange(construct_interval, 10001, construct_interval),
                         [array_time.construct, avl_time.construct, binary_time.construct, rb_time.construct],
                         ["array", "avl", "bst", "red black"], "Construct structure")
             plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[0], result.array)),
                                                        list(map(lambda x: x[0], result.avl)),
                                                        list(map(lambda x: x[0], result.bst)),
-                                                       list(map(lambda x: x[0], result.rb))], ["array", "avl", "bst", "red black"], "Insert elements")
+                                                       list(map(lambda x: x[0], result.rb))],
+                        ["array", "avl", "bst", "red black"], "Insert elements")
             plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[1], result.array)),
                                                        list(map(lambda x: x[1], result.avl)),
                                                        list(map(lambda x: x[1], result.bst)),
@@ -275,7 +298,6 @@ if __name__ == '__main__':
                                                        list(map(lambda x: x[3], result.bst)),
                                                        list(map(lambda x: x[3], result.rb))],
                         ["avl", "bst", "red black"], "Find elements in interval")
-
         # print(f'Array: {len(array_structure.find_elements(find_min, find_max))} '
         #       f'AVL: {len(list(avl.find_elements(find_min, find_max)))} '
         #       f'Binary: {len(list(binary.find_elements(find_min, find_max)))} '
