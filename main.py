@@ -184,6 +184,7 @@ class Result:
 
 def calculateDataForPlot():
     result = Result()
+    constructTimes = Result()
     for size in range(1000, 10001, 1000):
         data_set = DataSet(size)
         insert_set = DataSet(to_insert).randomSet
@@ -238,7 +239,12 @@ def calculateDataForPlot():
         result.avl.append([avl_time.insert, avl_time.delete, avl_time.find, avl_time.f_interval])
         result.rb.append([rb_time.insert, rb_time.delete, rb_time.find, rb_time.f_interval])
 
-    return result
+    constructTimes.array.append(array_time.construct)
+    constructTimes.avl.append(avl_time.construct)
+    constructTimes.bst.append(binary_time.construct)
+    constructTimes.rb.append(rb_time.construct)
+
+    return [result, constructTimes]
 
 def makeAverage(data):
     result = Result()
@@ -257,14 +263,20 @@ def makeAverage(data):
 if __name__ == '__main__':
     # file = open("results.csv", "w")
     toMakeAverage = []
+    toMakeAverageConstructTimes = []
     for iteration in range(1, iterations + 1, 1):
-        resultDone = calculateDataForPlot()
-        toMakeAverage.append(resultDone)
+        plotData = calculateDataForPlot()
+        insertDeleteFindTimes = plotData[0]
+        constructTimes = plotData[1]
+        toMakeAverage.append(insertDeleteFindTimes)
+        toMakeAverageConstructTimes.append(constructTimes)
 
         if iteration == iterations:
             result = makeAverage(toMakeAverage)
+            constructAveraged = makeAverage(toMakeAverageConstructTimes)
+
             plot_result(np.arange(construct_interval, 10001, construct_interval),
-                        [array_time.construct, avl_time.construct, binary_time.construct, rb_time.construct],
+                        [constructAveraged.array[0], constructAveraged.avl[0], constructAveraged.bst[0], constructAveraged.rb[0]],
                         ["array", "avl", "bst", "red black"], "Construct structure")
             plot_result(np.arange(1000, 10001, 1000), [list(map(lambda x: x[0], result.array)),
                                                        list(map(lambda x: x[0], result.avl)),
