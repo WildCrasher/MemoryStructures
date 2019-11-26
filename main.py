@@ -126,14 +126,17 @@ def calculate_times(data_set, structure, processing_sets, experiment):
     cpy = copy.deepcopy(structure)
     insert_time = insert_elements(structure, processing_sets['insert_set'])
     delete_time = delete_elements(cpy, processing_sets['delete_set'])
-    return [insert_time, delete_time, find_time, find_interval]
+    return [insert_time, delete_time, find_time, find_interval], construct_time
 
 
 def begin_experiment(experiment):
     toMakeAverage = []
+    toMakeAverageConstructTimes = []
     for iteration in range(experiment['iterations']):
         print(iteration)
         result = Result()
+        construct_times = Result()
+        array_time, avl_time, bst_time, rb_time = [], [], [], []
         for size in range(experiment['min_size'], experiment['max_size']+1, experiment['loop_interval']):
             data_set = generate_data_set(experiment['data_set_gen'], size, experiment['min_wrapper_size'],
                                          experiment['max_wrapper_size'])
@@ -142,18 +145,33 @@ def begin_experiment(experiment):
             processing_sets['delete_set'] = generate_subset(data_set, experiment['to_delete']['method'], experiment['to_delete']['size'])
             processing_sets['find_set'] = generate_subset(data_set, experiment['to_find']['method'], experiment['to_find']['size'])
             processing_sets['f_min'], processing_sets['f_max'] = get_interval(data_set, experiment['interval_percentage'])
-            result.array.append(calculate_times(data_set, ArrayStructure([]), processing_sets, experiment))
-            result.avl.append(calculate_times(data_set, AVLWrapper(), processing_sets, experiment))
-            result.bst.append(calculate_times(data_set, BinaryWrapper(), processing_sets, experiment))
-            result.rb.append(calculate_times(data_set, RBWrapper(), processing_sets, experiment))
+            if experiment['with_array']:
+                res, array_time = calculate_times(data_set, ArrayStructure([]), processing_sets, experiment)
+                result.array.append(res)
+            res, avl_time = calculate_times(data_set, AVLWrapper(), processing_sets, experiment)
+            result.avl.append(res)
+            res, bst_time = calculate_times(data_set, BinaryWrapper(), processing_sets, experiment)
+            result.bst.append(res)
+            res, rb_time = calculate_times(data_set, RBWrapper(), processing_sets, experiment)
+            result.rb.append(res)
+        if experiment['with_array']:
+            construct_times.array.append(array_time)
+        construct_times.avl.append(avl_time)
+        construct_times.bst.append(bst_time)
+        construct_times.rb.append(rb_time)
         toMakeAverage.append(result)
+        toMakeAverageConstructTimes.append(construct_times)
+    construct_averaged = makeAverage(toMakeAverageConstructTimes)
     result = makeAverage(toMakeAverage)
-    plot_all(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result)
-    plot_tree(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result)
+    if experiment['with_array']:
+        plot_all(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result, construct_averaged)
+    else:
+        plot_tree(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result, construct_averaged)
 
 
 if __name__ == '__main__':
     experiment1 = {
+        'with_array': True,  # True - 4 plots, False - 3 plots
         'min_wrapper_size': 1,
         'max_wrapper_size': 100,
         'data_set_gen': 'random',  # random, asc, desc
@@ -170,7 +188,7 @@ if __name__ == '__main__':
             'size': 100,  # number of elements to delete
         },
         'to_find': {
-            'method': 'random',  # should be random
+            'method': 'random',   # begin - first elements, end - last elements, random - random elements
             'size': 100,  # number of elements to find
         },
         'iterations': 5,

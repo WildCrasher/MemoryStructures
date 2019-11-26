@@ -2,11 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_result(x, y, labels, title=""):
+def plot_result(x, y, labels, colors, title=""):
     fig = plt.figure()
     ax = plt.subplot(111)
     for i in range(0, len(y)):
-        ax.plot(x, y[i], label=labels[i])
+        ax.plot(x, y[i], colors[i], label=labels[i])
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -18,39 +18,47 @@ def plot_result(x, y, labels, title=""):
     plt.show()
 
 
-def plot_all(xdim, result):
+def plot_all(xdim, result, construct_averaged):
+    colors = ['b', 'y', 'g', 'r']
+    plot_result(xdim, [construct_averaged.array[0], construct_averaged.avl[0], construct_averaged.bst[0],
+                       construct_averaged.rb[0]],
+                ["array", "avl", "bst", "red black"], colors, "Construct structure")
     plot_result(xdim, [list(map(lambda x: x[0], result.array)),
                        list(map(lambda x: x[0], result.avl)),
                        list(map(lambda x: x[0], result.bst)),
                        list(map(lambda x: x[0], result.rb))],
-                ["array", "avl", "bst", "red black"], "Insert elements")
+                ["array", "avl", "bst", "red black"], colors, "Insert elements")
     plot_result(xdim, [list(map(lambda x: x[1], result.array)),
                        list(map(lambda x: x[1], result.avl)),
                        list(map(lambda x: x[1], result.bst)),
                        list(map(lambda x: x[1], result.rb))],
-                ["array", "avl", "bst", "red black"], "Delete elements")
+                ["array", "avl", "bst", "red black"], colors, "Delete elements")
     plot_result(xdim, [list(map(lambda x: x[2], result.array)),
                 list(map(lambda x: x[2], result.avl)),
                 list(map(lambda x: x[2], result.bst)),
                 list(map(lambda x: x[2], result.rb))],
-                ["array", "avl", "bst", "red black"], "Find elements")
+                ["array", "avl", "bst", "red black"], colors, "Find elements")
     plot_result(xdim, [list(map(lambda x: x[3], result.array)),
                        list(map(lambda x: x[3], result.avl)),
                        list(map(lambda x: x[3], result.bst)),
                        list(map(lambda x: x[3], result.rb))],
-                ["array", "avl", "bst", "red black"], "Find elements in interval")
+                ["array", "avl", "bst", "red black"], colors, "Find elements in interval")
 
 
-def plot_tree(xdim, result):
+def plot_tree(xdim, result, construct_averaged):
+    colors = ['y', 'g', 'r']
+    plot_result(xdim, [construct_averaged.avl[0], construct_averaged.bst[0],
+                       construct_averaged.rb[0]],
+                ["avl", "bst", "red black"], colors, "Construct structure")
     plot_result(xdim, [list(map(lambda x: x[1], result.avl)),
                        list(map(lambda x: x[1], result.bst)),
                        list(map(lambda x: x[1], result.rb))],
-                ["avl", "bst", "red black"], "Delete elements")
+                ["avl", "bst", "red black"], colors, "Delete elements")
     plot_result(xdim, [list(map(lambda x: x[2], result.avl)),
                        list(map(lambda x: x[2], result.bst)),
                        list(map(lambda x: x[2], result.rb))],
-                ["avl", "bst", "red black"], "Find elements")
+                ["avl", "bst", "red black"], colors, "Find elements")
     plot_result(xdim, [list(map(lambda x: x[3], result.avl)),
                        list(map(lambda x: x[3], result.bst)),
                        list(map(lambda x: x[3], result.rb))],
-                ["avl", "bst", "red black"], "Find elements in interval")
+                ["avl", "bst", "red black"], colors, "Find elements in interval")
