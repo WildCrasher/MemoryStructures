@@ -120,15 +120,18 @@ def makeAverage(data):
 
 
 def calculate_times(data_set, structure, processing_sets, experiment):
+    # cpy = copy.deepcopy(structure)
+    insert_time = insert_elements(structure, processing_sets['insert_set'])
     construct_time = construct(structure, data_set, experiment['construct_interval'])
     find_time = find_elements(structure, processing_sets['find_set'])
     find_interval = find_elements_interval(structure, processing_sets['f_min'], processing_sets['f_max'])
-    cpy = copy.deepcopy(structure)
-    insert_time = insert_elements(structure, processing_sets['insert_set'])
-    delete_time = delete_elements(cpy, processing_sets['delete_set'])
+    # construct(cpy, data_set, experiment['construct_interval'])
+
+    delete_time = delete_elements(structure, processing_sets['delete_set'])
     return [insert_time, delete_time, find_time, find_interval], construct_time
 
-
+globalinsrt = generate_data_set('random', 500)
+# dlobalfind = generate_data_set('random', 1000)
 def begin_experiment(experiment):
     toMakeAverage = []
     toMakeAverageConstructTimes = []
@@ -141,9 +144,9 @@ def begin_experiment(experiment):
             data_set = generate_data_set(experiment['data_set_gen'], size, experiment['min_wrapper_size'],
                                          experiment['max_wrapper_size'])
             processing_sets = {}
-            processing_sets['insert_set'] = generate_data_set(experiment['to_insert']['method'], experiment['to_insert']['size'])
-            processing_sets['delete_set'] = generate_subset(data_set, experiment['to_delete']['method'], experiment['to_delete']['size'])
-            processing_sets['find_set'] = generate_subset(data_set, experiment['to_find']['method'], experiment['to_find']['size'])
+            processing_sets['insert_set'] = globalinsrt
+            processing_sets['delete_set'] = globalinsrt
+            processing_sets['find_set'] = globalinsrt
             processing_sets['f_min'], processing_sets['f_max'] = get_interval(data_set, experiment['interval_percentage'])
             if experiment['with_array']:
                 res, array_time = calculate_times(data_set, ArrayStructure([]), processing_sets, experiment)
@@ -166,12 +169,13 @@ def begin_experiment(experiment):
     if experiment['with_array']:
         plot_all(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result, construct_averaged)
     else:
-        plot_tree(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result, construct_averaged)
+        plot_tree(np.arange(experiment['min_size'], experiment['max_size']+1,  experiment['loop_interval']), result,
+                  np.arange(1000, experiment['max_size'] + 1, experiment['loop_interval']), construct_averaged)
 
 
 if __name__ == '__main__':
     experiment1 = {
-        'with_array': True,  # True - 4 plots, False - 3 plots
+        'with_array': False,  # True - 4 plots, False - 3 plots
         'min_wrapper_size': 1,
         'max_wrapper_size': 100,
         'data_set_gen': 'random',  # random, asc, desc
@@ -181,17 +185,17 @@ if __name__ == '__main__':
         'construct_interval': 1000,  # timestamps frequency while constructing the structure
         'to_insert': {
           'method': 'random',  # should be random
-          'size': 100,  # number of elements to insert
+          'size': 500,  # number of elements to insert
         },
         'to_delete': {
             'method': 'random',  # begin - first elements, end - last elements, random - random elements
-            'size': 100,  # number of elements to delete
+            'size': 500,  # number of elements to delete
         },
         'to_find': {
             'method': 'random',   # begin - first elements, end - last elements, random - random elements
-            'size': 100,  # number of elements to find
+            'size': 500,  # number of elements to find
         },
-        'iterations': 5,
+        'iterations': 50,
         'interval_percentage': 0.5  # % of elements in interval
 
     }

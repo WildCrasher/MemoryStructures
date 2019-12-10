@@ -23,6 +23,10 @@ def plot_all(xdim, result, construct_averaged):
     plot_result(xdim, [construct_averaged.array[0], construct_averaged.avl[0], construct_averaged.bst[0],
                        construct_averaged.rb[0]],
                 ["array", "avl", "bst", "red black"], colors, "Construct structure")
+    plot_result(xdim, [np.cumsum(construct_averaged.array[0]), np.cumsum(construct_averaged.avl[0]),
+                       np.cumsum(construct_averaged.bst[0]),
+                       np.cumsum(construct_averaged.rb[0])],
+                ["array", "avl", "bst", "red black"], colors, "Construct structure (cumulative)")
     plot_result(xdim, [list(map(lambda x: x[0], result.array)),
                        list(map(lambda x: x[0], result.avl)),
                        list(map(lambda x: x[0], result.bst)),
@@ -45,11 +49,18 @@ def plot_all(xdim, result, construct_averaged):
                 ["array", "avl", "bst", "red black"], colors, "Find elements in interval")
 
 
-def plot_tree(xdim, result, construct_averaged):
+def plot_tree(xdim, result, xconstruct, construct_averaged):
     colors = ['y', 'g', 'r']
-    plot_result(xdim, [construct_averaged.avl[0], construct_averaged.bst[0],
+    plot_result(xconstruct, [np.cumsum(construct_averaged.avl[0]), np.cumsum(construct_averaged.bst[0]),
+                             np.cumsum(construct_averaged.rb[0])],
+                ["avl", "bst", "red black"], colors, "Construct structure (cumulative)")
+    plot_result(xconstruct, [construct_averaged.avl[0], construct_averaged.bst[0],
                        construct_averaged.rb[0]],
                 ["avl", "bst", "red black"], colors, "Construct structure")
+    plot_result(xdim, [list(map(lambda x: x[0], result.avl)),
+                       list(map(lambda x: x[0], result.bst)),
+                       list(map(lambda x: x[0], result.rb))],
+                ["avl", "bst", "red black"], colors, "Insert elements")
     plot_result(xdim, [list(map(lambda x: x[1], result.avl)),
                        list(map(lambda x: x[1], result.bst)),
                        list(map(lambda x: x[1], result.rb))],
