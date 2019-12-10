@@ -121,12 +121,11 @@ def makeAverage(data):
 
 def calculate_times(data_set, structure, processing_sets, experiment):
     # cpy = copy.deepcopy(structure)
-    insert_time = insert_elements(structure, processing_sets['insert_set'])
     construct_time = construct(structure, data_set, experiment['construct_interval'])
+    insert_time = insert_elements(structure, processing_sets['insert_set'])
     find_time = find_elements(structure, processing_sets['find_set'])
     find_interval = find_elements_interval(structure, processing_sets['f_min'], processing_sets['f_max'])
     # construct(cpy, data_set, experiment['construct_interval'])
-
     delete_time = delete_elements(structure, processing_sets['delete_set'])
     return [insert_time, delete_time, find_time, find_interval], construct_time
 
@@ -195,7 +194,7 @@ if __name__ == '__main__':
             'method': 'random',   # begin - first elements, end - last elements, random - random elements
             'size': 500,  # number of elements to find
         },
-        'iterations': 50,
+        'iterations': 3,
         'interval_percentage': 0.5  # % of elements in interval
 
     }
